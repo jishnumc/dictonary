@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() async {
   final node = UncontrolledProviderScope(
-    container: await bootstrap(AppFlavor.production),
+    container: await bootstrap(AppFlavor.staging),
     child: const App(),
   );
 
