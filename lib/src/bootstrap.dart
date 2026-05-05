@@ -1,13 +1,11 @@
 import 'package:dictonary/src/outer_layer/clients/storage_client.dart';
-import 'package:dictonary/src/system/flavor.dart';
-import 'package:dictonary/src/system/flavor_provider.dart';
 import 'package:dictonary/src/utils/app_provider_observer.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-Future<ProviderContainer> bootstrap(AppFlavor flavor) async {
+Future<ProviderContainer> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize essential dependencies
@@ -17,7 +15,6 @@ Future<ProviderContainer> bootstrap(AppFlavor flavor) async {
   final container = ProviderContainer(
     overrides: [
       sharedPreferencesProvider.overrideWithValue(sharedPref),
-      appFlavorProvider.overrideWithValue(flavor),
     ],
     observers: [const AppProviderObserver()],
   )
