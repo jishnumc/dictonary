@@ -1,4 +1,5 @@
 import 'package:chopper/chopper.dart';
+import 'package:dictonary/src/outer_layer/network/dictionary_service.dart';
 import 'package:dictonary/src/outer_layer/network/json_response_converter.dart';
 import 'package:dictonary/src/outer_layer/network/network_log_interceptor.dart';
 import 'package:dictonary/src/system/environment.dart';
@@ -13,7 +14,7 @@ class ApiClient {
     _client = ChopperClient(
       baseUrl: Uri.parse(Environment.baseUrl),
       services: [
-        //DictonaryService.create()
+        DictionaryService.create(),
       ],
       converter: const JsonResponseConverter(),
       interceptors: [
