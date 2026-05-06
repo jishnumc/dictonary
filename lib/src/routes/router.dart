@@ -2,6 +2,7 @@ import 'package:dictonary/src/features/auth/_self/auth_notifier.dart';
 import 'package:dictonary/src/features/auth/login/view/login_page.dart';
 import 'package:dictonary/src/features/home/view/home_page.dart';
 import 'package:dictonary/src/features/profile/view/profile_page.dart';
+import 'package:dictonary/src/features/splash/view/splash_page.dart';
 import 'package:dictonary/src/outer_layer/models/auth/auth_user.dart';
 import 'package:dictonary/src/routes/main_shell.dart';
 import 'package:dictonary/src/routes/router_listenable.dart';
@@ -17,8 +18,6 @@ final _shellNavigatorProfileKey = GlobalKey<NavigatorState>(debugLabel: 'profile
 
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
-  /// A [ChangeNotifier] that triggers a router redirect whenever the
-  /// authentication state changes.
   final routerListenable = RouterListenable(ref);
 
   return GoRouter(
@@ -27,28 +26,27 @@ GoRouter appRouter(Ref ref) {
     redirect: (context, state) {
       final authState = ref.read(authProvider);
       final isLoggedIn = authState.asData?.value.isAuth ?? false;
+      final isSplash = state.uri.path == '/splash';
       final isLoggingIn = state.uri.path == '/login';
+
+      if (isSplash) return null;
 
       if (!isLoggedIn) {
         if (isLoggingIn) return null;
-
-        final fromLoc = state.uri.toString();
-        if (fromLoc == '/') return '/login';
-        return '/login?from=${Uri.encodeComponent(fromLoc)}';
+        return '/login';
       }
 
-      if (isLoggingIn) {
-        final fromLoc = state.uri.queryParameters['from'];
-        if (fromLoc != null && fromLoc.isNotEmpty) {
-          return Uri.decodeComponent(fromLoc);
-        }
-        return '/';
-      }
+      if (isLoggingIn) return '/';
 
       return null;
     },
-    initialLocation: '/',
+    initialLocation: '/splash',
     routes: [
+      GoRoute(
+        path: '/splash',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const SplashPage(),
+      ),
       GoRoute(
         path: '/login',
         parentNavigatorKey: _rootNavigatorKey,
