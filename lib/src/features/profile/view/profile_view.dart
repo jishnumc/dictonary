@@ -1,5 +1,7 @@
 import 'package:dictonary/src/app_ui/app_ui.dart';
 import 'package:dictonary/src/features/auth/_self/auth_notifier.dart';
+import 'package:dictonary/src/features/profile/_self/settings_notifier.dart';
+import 'package:dictonary/src/outer_layer/models/app_settings.dart';
 import 'package:dictonary/src/outer_layer/models/auth/auth_user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,11 +15,23 @@ class ProfileView extends ConsumerWidget {
     final textTheme = context.zTextTheme;
     final authState = ref.watch(authProvider);
     final user = authState.asData?.value;
+    final themeMode = ref.watch(settingsProvider.select((s) => s.themeMode));
 
     return Scaffold(
       backgroundColor: colors.surface,
       appBar: AppBar(
         title: const Text('Profile'),
+        actions: [
+          IconButton(
+            onPressed: () =>
+                ref.read(settingsProvider.notifier).toggleThemeMode(),
+            icon: Icon(
+              themeMode == AppThemeMode.dark
+                  ? Icons.light_mode_rounded
+                  : Icons.dark_mode_rounded,
+            ),
+          ),
+        ],
       ),
       body: Center(
         child: Padding(
@@ -35,11 +49,9 @@ class ProfileView extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
-              Text(
-                user?.username ?? 'User',
-                style: textTheme.titleLarge,
-              ),
+              Text(user?.username ?? 'User', style: textTheme.titleLarge),
               const SizedBox(height: AppSpacing.xxl),
+
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
