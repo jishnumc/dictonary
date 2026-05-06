@@ -19,4 +19,10 @@ sealed class AuthUser with _$AuthUser {
 
 extension AuthUserX on AuthUser {
   bool get isAuth => this is _Authenticated;
+
+  String? get username {
+    final user = this;
+    if (user is _Authenticated) return user.username;
+    return null;
+  }
 }

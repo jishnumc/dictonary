@@ -17,13 +17,6 @@ class HomeView extends ConsumerWidget {
       backgroundColor: colors.surface,
       appBar: AppBar(
         title: const Text('Dictionary'),
-        actions: [
-          IconButton(
-            onPressed: () => ref.read(authProvider.notifier).logout(),
-            icon: const Icon(Icons.logout),
-            tooltip: 'Logout',
-          ),
-        ],
       ),
       body: Center(
         child: Padding(

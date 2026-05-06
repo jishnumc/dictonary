@@ -28,8 +28,25 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
 
-        resValue("string", "app_name", "Dictionary")
+    flavorDimensions += "environment"
+
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            resValue("string", "app_name", "Dictionary Dev")
+        }
+        create("stg") {
+            dimension = "environment"
+            applicationIdSuffix = ".stg"
+            resValue("string", "app_name", "Dictionary Stg")
+        }
+        create("prod") {
+            dimension = "environment"
+            resValue("string", "app_name", "Dictionary")
+        }
     }
 
     buildTypes {
