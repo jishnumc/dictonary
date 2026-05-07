@@ -1,4 +1,5 @@
 import 'package:dictonary/src/features/auth/_self/auth_notifier.dart';
+import 'package:dictonary/src/features/auth/login/models/login_validation.dart';
 import 'package:dictonary/src/outer_layer/models/auth/credentials.dart';
 import 'package:dictonary/src/outer_layer/repositories/auth/auth_repository.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -34,7 +35,30 @@ class LoginNotifier extends _$LoginNotifier {
     state = state.copyWith(password: password);
   }
 
+  ValidationResult validateEmail(String email) {
+    if (email.isEmpty) return const Invalid('Email cannot be empty');
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(email)) return const Invalid('Invalid email format');
+    return const Valid();
+  }
+
+  ValidationResult validatePassword(String password) {
+    if (password.isEmpty) return const Invalid('Password cannot be empty');
+    if (password.length < 6) {
+      return const Invalid('Password must be at least 6 characters');
+    }
+    return const Valid();
+  }
+
   Future<void> login() async {
+    final emailValidation = validateEmail(state.username);
+    final passwordValidation = validatePassword(state.password);
+
+    if (emailValidation is Invalid || passwordValidation is Invalid) {
+      state = state.copyWith(errorMessage: 'Please fix the errors above');
+      return;
+    }
+
     final repository = ref.read(authRepositoryProvider);
     state = state.copyWith(isLoggingIn: true, errorMessage: '');
 

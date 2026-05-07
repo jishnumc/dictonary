@@ -7,4 +7,5 @@ export 'themes/app_theme.dart';
 export 'themes/app_theme_dark.dart';
 export 'themes/app_theme_light.dart';
 export 'typography/app_text_theme.dart';
+export 'widgets/widgets.dart';
 export 'typography/text_theme_native.dart';

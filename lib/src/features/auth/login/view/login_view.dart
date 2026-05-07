@@ -1,4 +1,5 @@
 import 'package:dictonary/src/app_ui/app_ui.dart';
+import 'package:dictonary/src/features/auth/login/models/login_validation.dart';
 import 'package:dictonary/src/features/auth/login/state/login_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,18 +12,17 @@ class LoginView extends ConsumerStatefulWidget {
 }
 
 class _LoginViewState extends ConsumerState<LoginView> {
-  // final _emailController = TextEditingController();
-  // final _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
-    // _emailController.dispose();
-    // _passwordController.dispose();
     super.dispose();
   }
 
   Future<void> _onLogin() async {
-    await ref.read(loginProvider.notifier).login();
+    if (_formKey.currentState?.validate() ?? false) {
+      await ref.read(loginProvider.notifier).login();
+    }
   }
 
   @override
@@ -31,143 +31,106 @@ class _LoginViewState extends ConsumerState<LoginView> {
     final isLoading = loginState.isLoggingIn;
     final colors = context.zAppColors;
     final textTheme = context.zTextTheme;
+    final notifier = ref.read(loginProvider.notifier);
 
     return Scaffold(
       backgroundColor: colors.surface,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: AppSpacing.xxxl * 2),
-              Icon(Icons.menu_book_rounded, size: 80, color: colors.primary),
-              const SizedBox(height: AppSpacing.xl),
-              Text(
-                'Welcome Back',
-                style: textTheme.headlineLarge?.copyWith(
-                  color: colors.onSurface,
-                  fontWeight: FontWeight.bold,
+          child: Form(
+            key: _formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: AppSpacing.xxxl * 2),
+                Icon(Icons.menu_book_rounded, size: 80, color: colors.primary),
+                const SizedBox(height: AppSpacing.xl),
+                Text(
+                  'Welcome Back',
+                  style: textTheme.headlineLarge?.copyWith(
+                    color: colors.onSurface,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'Login to continue using the dictionary app',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurface.withValues(alpha: 0.7),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Login to continue using the dictionary app',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colors.onSurface.withValues(alpha: 0.7),
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-              TextFormField(
-                //controller: _emailController,
-                onChanged: (value) =>
-                    ref.read(loginProvider.notifier).updateUsername(value),
-                initialValue: loginState.username,
-                decoration: InputDecoration(
+                const SizedBox(height: AppSpacing.xxl),
+                AppTextField(
                   labelText: 'Email',
                   hintText: 'example@gmail.com',
                   prefixIcon: const Icon(Icons.email_outlined),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.sm),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.sm),
-                    borderSide: BorderSide(color: colors.outline),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.sm),
-                    borderSide: BorderSide(color: colors.primary, width: 2),
-                  ),
+                  initialValue: loginState.username,
+                  onChanged: (value) => notifier.updateUsername(value),
+                  validator: (value) => switch (notifier.validateEmail(value ?? '')) {
+                    Valid() => null,
+                    Invalid(:final message) => message,
+                  },
+                  keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.next,
                 ),
-                keyboardType: TextInputType.emailAddress,
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              TextFormField(
-                // controller: _passwordController,
-                onChanged: (value) =>
-                    ref.read(loginProvider.notifier).updatePassword(value),
-                initialValue: loginState.password,
-                decoration: InputDecoration(
+                const SizedBox(height: AppSpacing.md),
+                AppTextField(
                   labelText: 'Password',
                   hintText: 'Enter your password',
                   prefixIcon: const Icon(Icons.lock_outline),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.sm),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.sm),
-                    borderSide: BorderSide(color: colors.outline),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.sm),
-                    borderSide: BorderSide(color: colors.primary, width: 2),
-                  ),
+                  initialValue: loginState.password,
+                  onChanged: (value) => notifier.updatePassword(value),
+                  validator: (value) => switch (notifier.validatePassword(value ?? '')) {
+                    Valid() => null,
+                    Invalid(:final message) => message,
+                  },
+                  obscureText: true,
+                  textInputAction: TextInputAction.done,
                 ),
-                obscureText: true,
-                textInputAction: TextInputAction.done,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              ElevatedButton(
-                onPressed: isLoading ? null : _onLogin,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.primary,
-                  foregroundColor: colors.onPrimary,
-                  minimumSize: const Size.fromHeight(56),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.sm),
-                  ),
+                const SizedBox(height: AppSpacing.lg),
+                AppButton(
+                  text: 'Login',
+                  isLoading: isLoading,
+                  onPressed: _onLogin,
                 ),
-                child: isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(
-                        'Login',
+                if (loginState.errorMessage.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    loginState.errorMessage,
+                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+                const SizedBox(height: AppSpacing.lg),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Don't have an account? ",
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colors.onSurface.withValues(alpha: 0.7),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        // TODO: Navigate to Sign Up
+                      },
+                      child: Text(
+                        'Sign Up',
                         style: TextStyle(
-                          fontSize: 16,
+                          color: colors.primary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-              ),
-              if (loginState.errorMessage.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  loginState.errorMessage,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                  textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ],
-              const SizedBox(height: AppSpacing.lg),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Don't have an account? ",
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: colors.onSurface.withValues(alpha: 0.7),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      // TODO: Navigate to Sign Up
-                    },
-                    child: Text(
-                      'Sign Up',
-                      style: TextStyle(
-                        color: colors.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ),
